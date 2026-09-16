@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IHRM Stores Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">IHRM</span>
+      <span class="brand-sub">Stores Register</span>
+    </div>
+    <nav class="nav" aria-label="Modules">
+      <button class="nav-item active" data-view="dashboard">01 Dashboard</button>
+      <button class="nav-item" data-view="items">02 Item Master</button>
+      <button class="nav-item" data-view="receive">03 Receive Stock</button>
+      <button class="nav-item" data-view="issue">04 Issue Stock</button>
+      <button class="nav-item" data-view="ledger">05 Stock Ledger</button>
+      <button class="nav-item" data-view="reports">06 Reports</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="foot-label">Session</div>
+      <div id="clock">—</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1 id="viewTitle">Dashboard</h1>
+        <p id="viewSub">Current position of the IHRM stores register</p>
+      </div>
+      <div class="topbar-org">Institute of Human Resource Management</div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-label">Items on register</span>
+          <span class="stat-value" id="statItems">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Below reorder level</span>
+          <span class="stat-value warn" id="statLow">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Received today</span>
+          <span class="stat-value good" id="statIn">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Issued today</span>
+          <span class="stat-value" id="statOut">0</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Items below reorder level</h2>
+          <span class="panel-note">Review and raise a requisition where needed</span>
+        </div>
+        <div class="table-wrap">
+          <table id="lowStockTable">
+            <thead><tr><th>Code</th><th>Item</th><th>Unit</th><th>On hand</th><th>Reorder level</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Latest movements</h2>
+          <span class="panel-note">Most recent 8 entries across all items</span>
+        </div>
+        <div class="table-wrap">
+          <table id="recentLedgerTable">
+            <thead><tr><th>Date</th><th>Type</th><th>Code</th><th>Item</th><th>Qty</th><th>Reference</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ITEM MASTER -->
+    <section class="view" id="view-items">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Register a new item</h2>
+          <span class="panel-note">Every item needs a code before it can be received or issued</span>
+        </div>
+        <form id="itemForm" class="grid-form">
+          <label>Item code
+            <input type="text" id="itemCode" placeholder="e.g. STA-014" required>
+          </label>
+          <label>Description
+            <input type="text" id="itemName" placeholder="e.g. A4 Bond Paper Ream" required>
+          </label>
+          <label>Category
+            <select id="itemCategory">
+              <option>Stationery</option>
+              <option>ICT Consumables</option>
+              <option>Training Materials</option>
+              <option>Certification Materials</option>
+              <option>Office Supplies</option>
+              <option>Cleaning & Maintenance</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>Unit of measure
+            <input type="text" id="itemUnit" placeholder="e.g. Ream, Box, Piece" required>
+          </label>
+          <label>Reorder level
+            <input type="number" id="itemReorder" min="0" value="10" required>
+          </label>
+          <label>Bin / location
+            <input type="text" id="itemLocation" placeholder="e.g. Store A - Shelf 3">
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add item</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Item register</h2>
+          <span class="panel-note" id="itemCount">0 items</span>
+        </div>
+        <div class="table-wrap">
+          <table id="itemsTable">
+            <thead><tr><th>Code</th><th>Description</th><th>Category</th><th>Unit</th><th>On hand</th><th>Reorder level</th><th>Location</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECEIVE -->
+    <section class="view" id="view-receive">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Receive stock</h2>
+          <span class="panel-note">Logs a goods-in entry and raises the item balance</span>
+        </div>
+        <form id="receiveForm" class="grid-form">
+          <label>Item
+            <select id="receiveItem" required></select>
+          </label>
+          <label>Quantity received
+            <input type="number" id="receiveQty" min="1" required>
+          </label>
+          <label>Supplier
+            <input type="text" id="receiveSupplier" placeholder="Supplier name">
+          </label>
+          <label>LPO / delivery note no.
+            <input type="text" id="receiveRef" placeholder="e.g. LPO-2026-0142">
+          </label>
+          <label>Date received
+            <input type="date" id="receiveDate" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Record receipt</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Recent receipts</h2>
+        </div>
+        <div class="table-wrap">
+          <table id="receiveTable">
+            <thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Qty</th><th>Supplier</th><th>Reference</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ISSUE -->
+    <section class="view" id="view-issue">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Issue stock</h2>
+          <span class="panel-note">Logs a goods-out entry and reduces the item balance</span>
+        </div>
+        <form id="issueForm" class="grid-form">
+          <label>Item
+            <select id="issueItem" required></select>
+          </label>
+          <label>Quantity to issue
+            <input type="number" id="issueQty" min="1" required>
+          </label>
+          <label>Department
+            <input type="text" id="issueDept" placeholder="e.g. Membership & Registration" required>
+          </label>
+          <label>Requested by
+            <input type="text" id="issueRequester" placeholder="Name of requesting officer">
+          </label>
+          <label>Date issued
+            <input type="date" id="issueDate" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Record issue</button>
+          </div>
+        </form>
+        <p class="form-error" id="issueError"></p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Recent issues</h2>
+        </div>
+        <div class="table-wrap">
+          <table id="issueTable">
+            <thead><tr><th>Date</th><th>Code</th><th>Item</th><th>Qty</th><th>Department</th><th>Requested by</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEDGER -->
+    <section class="view" id="view-ledger">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Stock ledger</h2>
+          <span class="panel-note">Full movement history — filter as needed</span>
+        </div>
+        <div class="filter-row">
+          <label>Item
+            <select id="ledgerFilterItem"><option value="">All items</option></select>
+          </label>
+          <label>Type
+            <select id="ledgerFilterType">
+              <option value="">All</option>
+              <option value="IN">Receipts</option>
+              <option value="OUT">Issues</option>
+            </select>
+          </label>
+          <label>From
+            <input type="date" id="ledgerFrom">
+          </label>
+          <label>To
+            <input type="date" id="ledgerTo">
+          </label>
+          <button class="btn btn-ghost" id="ledgerFilterBtn">Apply filter</button>
+          <button class="btn btn-ghost" id="ledgerResetBtn">Reset</button>
+        </div>
+        <div class="table-wrap">
+          <table id="ledgerTable">
+            <thead><tr><th>Date</th><th>Type</th><th>Code</th><th>Item</th><th>Qty</th><th>Balance after</th><th>Reference / Dept</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="view" id="view-reports">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Generate a report</h2>
+          <span class="panel-note">Choose a report, then export to Excel or PDF</span>
+        </div>
+        <div class="filter-row">
+          <label>Report type
+            <select id="reportType">
+              <option value="balance">Stock balance report</option>
+              <option value="movement">Movement report</option>
+              <option value="lowstock">Low-stock report</option>
+            </select>
+          </label>
+          <label id="reportFromWrap">From
+            <input type="date" id="reportFrom">
+          </label>
+          <label id="reportToWrap">To
+            <input type="date" id="reportTo">
+          </label>
+          <button class="btn btn-primary" id="generateReportBtn">Generate</button>
+        </div>
+
+        <div class="report-output" id="reportOutput" hidden>
+          <div class="report-letterhead">
+            <div>
+              <strong>Institute of Human Resource Management</strong>
+              <div>Stores Register — <span id="reportTitleText"></span></div>
+            </div>
+            <div class="report-meta">
+              <div>Generated: <span id="reportGenDate"></span></div>
+              <div>Period: <span id="reportPeriod">All dates</span></div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="reportTable">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="export-row">
+            <button class="btn btn-ghost" id="exportExcelBtn">Export to Excel</button>
+            <button class="btn btn-ghost" id="exportPdfBtn">Export to PDF</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
